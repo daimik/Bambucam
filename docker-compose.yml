@@ -1,0 +1,27 @@
+services:
+  bambucam:
+    build:
+      context: .
+      args:
+        BAMBU_STUDIO_VERSION: "01.07.07"
+        # Set to a direct Linux plugin .zip URL to bypass the Bambu API:
+        # BAMBU_PLUGIN_URL: ""
+    image: bambucam:local
+    platform: linux/amd64
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - "${BAMBU_PORT:-8080}:${BAMBU_PORT:-8080}"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "${BAMBU_PORT:-8080}"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    # ---------------------------------------------------------------------
+    # RTP MODE: the RTP binary pushes UDP to container-localhost; published
+    # ports do NOT deliver it. To use SERVER=RTP: set SERVER=RTP in .env,
+    # comment out the `ports:` and `healthcheck:` blocks above, and uncomment
+    # the line below. Then view with:  vlc rtp://<host>:<BAMBU_PORT>
+    # network_mode: host
+    # ---------------------------------------------------------------------
